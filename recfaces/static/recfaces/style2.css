@@ -1,0 +1,82 @@
+.main {
+  background-color: #edeef0; /* edebeb */
+  height: 100vh;
+  margin: 0px;
+}
+
+.main_content {
+  height: 100%;
+  width: 1070px;
+  margin: 0 auto;
+  background-color:white;
+}
+
+.main_title {
+  padding: 10px 0px;
+  text-align: center;
+  border: 2px solid black;
+  border-radius: 5px;
+  background-color:lightslategray;
+  margin-block-start: 0em;
+}
+
+.functional_content {
+  margin-top: 50px;
+  padding: 0px 10px;
+}
+
+.add {
+  background-color:yellow;
+  padding: 5px;
+  border: 1px solid black;
+  border-radius: 5px;
+}
+
+.database {
+  margin-top: 40px;
+  border: 1px solid black;
+  border-radius: 5px;
+}
+
+.data_title {
+  /* position: absolute; */
+  /* display: inline-block; */
+  font-size: 18px;
+  margin: 0;
+  padding: 5px;
+}
+
+.img_person {
+  display: inline-block;
+  vertical-align: top;
+  float: none;
+  height: 100px;
+  width: 100px;
+  padding: 4px;
+
+}
+
+.cards {
+  /* display: inline-block; */
+}
+
+.card {
+  width: 350px;
+  border: 1px solid black;
+  border-radius: 5px;
+  padding-bottom: 5px;
+  margin: 10px;
+}
+
+.info_person {
+  display: inline-block;
+  vertical-align: top;
+}
+
+.person_info {
+  margin: 8px;
+}
+
+.person_info:not(:last-child) {
+  border-bottom: 1px solid gray;
+}

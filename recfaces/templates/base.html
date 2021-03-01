@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Base</title>
+</head>
+<body>
+<h3>Введите данные, чтобы добавить человека в БД:</h3>
+<form method="post" enctype="multipart/form-data">
+  {% csrf_token %}
+  {{ form.as_p }}
+  <button type="submit">Send</button>
+</form>
+
+{% if people.count > 0 %}
+    <h2>База данных</h2>
+    <table>
+        <tr><th>Id</th><th>Имя</th><th>Пол</th><th>Возраст</th><th>Фото</th></tr>
+        {% for person in people %}
+        <tr><td>{{ person.id }}</td>
+            <td>{{ person.name }}</td>
+            <td>{{ person.gender }}</td>
+            <td>{{ person.age }}</td>
+            <td><img  src = {{ person.image }} height="100px" width="100px"></td></tr>
+        {% endfor %}
+    </table>
+{% endif %}
+
+</body>
+</html>

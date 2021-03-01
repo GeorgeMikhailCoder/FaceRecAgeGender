@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Home</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'recfaces/style.css' %}">
+</head>
+<body class="main">
+  <div class="main_content">
+    <h3 class="main_title">You are at home</h3>
+    <div class="functional_content">
+      <a class="add" href="add_person/">Добавить фото</a>
+      <div class="database">
+        <p class="data_title"><strong>База Данных</strong></p>
+        <ol>
+          {% for person in object_list %}
+            <li>
+                <img align="left" height="100px" width="100px" src="{{ person.imgPath.url}}" alt="{{ person.fio }}">
+                <div>
+                <h4>id = {{ person.id }}</h4>
+                <h4>name = {{ person.fio }}</h4>
+                <h4>gender = {{ person.gender }}</h4>
+                <h4>age = {{ person.age }}</h4>
+                </div>
+            </li>
+          {% endfor %}
+        </ol>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

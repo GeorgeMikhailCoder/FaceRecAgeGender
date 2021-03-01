@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Home</title>
+</head>
+<body>
+<h3>You are at home</h3>
+<a href="add_person/">Добавить фото</a>
+<h4>База Данных</h4>
+<ol>
+  {% for person in object_list %}
+    <li>
+        <p>
+            <h4 >id = {{ person.id }}, name = {{ person.fio }}, gender = {{ person.gender }}, age = {{ person.age }}</h4>
+        </p>
+        <p>
+            <img height="100px" width="100px" src="{{ person.imgPath.url}}" alt="{{ person.name }}">
+        </p>
+    </li>
+  {% endfor %}
+</ol>
+</body>
+</html>

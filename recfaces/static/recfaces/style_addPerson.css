@@ -1,0 +1,28 @@
+.body-cont {
+  background-color: #edeef0;
+}
+.main-content {
+  width: 800px;
+  height: 714px;
+  margin: 10vh auto;
+  background-image: url(Ellipse2.svg);
+  background-repeat: no-repeat;
+  background-size: contain;
+}
+
+.text {
+  position: absolute;
+  left: 37%;
+  top: 27%;
+}
+
+.output_button {
+  background-color: yellow;
+  border-color: yellow;
+  border-radius: 5px;
+}
+.esc_button {
+  background-color: yellow;
+  border-color: yellow;
+  border-radius: 5px;
+}

@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>Django Forms</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'recfaces/style_addPerson.css' %}">
+  </head>
+  <body class="body-cont">
+    <div class="main-content">
+      <div class="text">
+        <h3 class="main-title">Введите данные, чтобы добавить человека в БД:</h3>
+        <form class="output" method="post" enctype="multipart/form-data">
+          {% csrf_token %}
+          {{ form.as_p }}
+          <button class="output_button" type="submit">Отправить</button>
+        </form>
+        <br>
+        <form class="esc" method="get" action="../" enctype="multipart/form-data">
+          <button class="esc_button" type="submit">Отмена</button>
+        </form>
+      </div>
+    </div>
+  </body>
+</html>
