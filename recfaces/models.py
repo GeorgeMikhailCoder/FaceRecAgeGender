@@ -1,6 +1,7 @@
 from django.db import models
 from .RecogniseSQLExFunctions import encodeImageToBin
-from .RecogniseSQLExFunctions import mainCheckAndAddImageToBase, genTempName, mainCheckImageInBase, replacePhoto, removePhoto
+from .RecogniseSQLExFunctions import genTempName, mainCheckImageInBase, replacePhoto, removePhoto
+from .AGpredictor.predict_AG import mainPredictAG
 from django.conf import settings
 from django.core.files.storage import default_storage
 from django.core.files.base import ContentFile
@@ -10,8 +11,8 @@ from icecream import ic
 
 class Person(models.Model):
     fio = models.CharField(max_length=50, default="unknown")
-    gender = models.CharField(max_length=1, choices=[('M', 'Male'), ('F', 'Female')], default="M")
-    age = models.SmallIntegerField(default="0")
+    gender = models.CharField(max_length=1, choices=[(settings.DEFAULT_AG["gender"], '?'), ('M', 'Male'), ('F', 'Female')], default=settings.DEFAULT_AG["gender"])
+    age = models.SmallIntegerField(default=settings.DEFAULT_AG["age"])
     imgPath = models.ImageField(max_length=200, default="None")
     binImg = models.BinaryField(max_length=2048, default=None)
 
@@ -24,12 +25,9 @@ class Person(models.Model):
         tempName = "face" + genTempName() + ".jpg"
         path = default_storage.save(os.path.join("tmp",tempName), ContentFile(tempImage.read()))
         tmpFilePath = os.path.join(settings.MEDIA_ROOT, path)
-        ic(settings.PATH_IMAGES)
-
         isOld = mainCheckImageInBase(tmpFilePath, settings.DB_INFO)
 
         if not isOld:
-            ic(settings.PATH_IMAGES)
             replacePhoto(tmpFilePath, settings.PATH_IMAGES)
             newImgPath = os.path.join(settings.PATH_IMAGES, tempName)
             self.binImg = encodeImageToBin(newImgPath)
@@ -41,6 +39,19 @@ class Person(models.Model):
             ic(self.gender)
             ic(self.imgPath)
             ic(len(self.binImg))
+            ic(settings.PATH_IMAGES)
+
+            if self.age == settings.DEFAULT_AG["age"] or self.gender == settings.DEFAULT_AG["gender"]:
+                age, gender = mainPredictAG(self.imgPath.__str__(), settings.PREDICT_ACCURACY, settings.DEFAULT_AG)
+
+                if self.age == settings.DEFAULT_AG["age"] and age != settings.DEFAULT_AG["age"]:
+                    self.age = age
+                    print(f"predicted age = {age}")
+
+                if self.gender == settings.DEFAULT_AG["gender"] and gender != settings.DEFAULT_AG["gender"]:
+                    self.gender = gender
+                    print(f"predicted gender = {gender}")
+
             super().save(*args, **kwargs)
         else:
             print(f"Photo already exists in DB")

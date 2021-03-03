@@ -16,7 +16,7 @@
         <ol class="cards">
           {% for person in object_list %}
             <li class="card">
-                <img class="img_person" align="left" height="100px" width="100px" src="{{ person.imgPath.url}}" alt="{{ person.fio }}">
+                <img class="img_person" align="left" height="100px" width="100px" src="{{ person.imgPath.url }}" alt="{{ person.fio }}">
                 <div class="info_person">
                   <h4 class="person_info">id = {{ person.id }}</h4>
                   <h4 class="person_info">name = {{ person.fio }}</h4>

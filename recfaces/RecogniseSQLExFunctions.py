@@ -80,7 +80,11 @@ def replacePhoto(imgPath, pathTo):
     move(imgPath, pathTo)
 
 def removePhoto(imgPath):
-    os.remove(imgPath)
+    try:
+        os.remove(imgPath)
+    except Exception:
+        print(f"Fail to remove file: {imgPath}")
+        print("Also an object in base will be removed")
 
 def showBase(DBcursor):
     for row in DBcursor.execute('SELECT id, fio, gender, age FROM recfaces_person'):
@@ -128,7 +132,10 @@ def checkAndAddImageInBase(imgPath, DBcursor, pathDBImages):
         imgNewPath = os.path.join(pathDBImages, imgName)
         replacePhoto(imgPath, imgNewPath)
 
-        addToBase(DBcursor, "unknown", 0, "?", imgNewPath, imgEnc)
+        from .AGpredictor.predict_AG import mainPredictAG
+        age, gender = mainPredictAG(imgNewPath, settings.PREDICT_ACCURACY, settings.DEFAULT_AG)
+
+        addToBase(DBcursor, "unknown", age, gender, imgNewPath, imgEnc)
         binImg = pickle.dumps(imgEnc)
         DBcursor.execute("SELECT id FROM recfaces_person WHERE binImg=%s", (binImg,))
         id = DBcursor.fetchone()[0]

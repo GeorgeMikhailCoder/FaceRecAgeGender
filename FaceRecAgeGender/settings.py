@@ -15,7 +15,12 @@ import os
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
-from .EnviromentVariables import DB_INFO, PATH_IMAGES, KOEF_FACE_COMPARATION
+from .EnviromentVariables import DB_INFO, PATH_IMAGES, KOEF_FACE_COMPARATION, PREDICT_ACCURACY
+
+DEFAULT_AG = {
+    "age": 0,
+    "gender": "?"
+}
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/3.0/howto/deployment/checklist/
@@ -24,7 +29,7 @@ from .EnviromentVariables import DB_INFO, PATH_IMAGES, KOEF_FACE_COMPARATION
 SECRET_KEY = '123'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 
 ALLOWED_HOSTS = ["127.0.0.1",
                  "80.78.247.242"]
@@ -40,7 +45,8 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'face_recognition',
-    'recfaces'
+    'age_and_gender',
+    'recfaces',
 ]
 
 MIDDLEWARE = [

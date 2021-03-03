@@ -8,12 +8,14 @@ def getVar(name, var):
     return var
 
 
-PATH_IMAGES = os.path.join(BASE_DIR, "media", "facesImages", "facesImages")
-KOEF_FACE_COMPARATION = 0.4
+PATH_IMAGES = os.path.join(BASE_DIR, "media", "facesImages")
+KOEF_FACE_COMPARATION = 0.6
 # насколько большую разницу между лицами можно считать одним лицом
 # 0.99 - разные люди воспринимаются как один
 # 0.01 - один человек воспринимается как разные
 # по умолчанию 0.6
+PREDICT_ACCURACY = 50
+# показывает вероятность, выше которой предсказание пола/возраста считается достоверным (вносится в базу)
 
 DB_NAME = "db_test"
 DB_USER = "test_user"
@@ -25,6 +27,8 @@ envVar = True
 if envVar:
     PATH_IMAGES = getVar("PATH_IMAGES", PATH_IMAGES)
     KOEF_FACE_COMPARATION = float(getVar("KOEF_FACE_COMPARATION", KOEF_FACE_COMPARATION))
+    PREDICT_ACCURACY = float(getVar("PREDICT_ACCURACY", PREDICT_ACCURACY))
+    DB_PORT = getVar("DB_PORT", DB_PORT)
     DB_NAME = getVar("DB_NAME", DB_NAME)
     DB_USER = getVar("DB_USER", DB_USER)
     DB_PASSWORD = getVar("DB_PASSWORD", DB_PASSWORD)
