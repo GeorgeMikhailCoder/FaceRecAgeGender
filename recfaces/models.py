@@ -33,24 +33,23 @@ class Person(models.Model):
             self.binImg = encodeImageToBin(newImgPath)
             self.imgPath = newImgPath
 
-            # self.binImg = encodeImageToBin(self.imgPath.__str__())
-            ic(self.fio)
-            ic(self.age)
-            ic(self.gender)
-            ic(self.imgPath)
-            ic(len(self.binImg))
-            ic(settings.PATH_IMAGES)
+            print(f"fio = {self.fio}")
+            print(f"age = {self.age}")
+            print(f"gender = {self.gender}")
+            print(f"image file full path: {self.imgPath.__str__()}")
+            print(f"encoding face length = {len(self.binImg)}")
+            # ic(settings.PATH_IMAGES)
 
             if self.age == settings.DEFAULT_AG["age"] or self.gender == settings.DEFAULT_AG["gender"]:
                 age, gender = mainPredictAG(self.imgPath.__str__(), settings.PREDICT_ACCURACY, settings.DEFAULT_AG)
 
                 if self.age == settings.DEFAULT_AG["age"] and age != settings.DEFAULT_AG["age"]:
                     self.age = age
-                    print(f"predicted age = {age}")
+
 
                 if self.gender == settings.DEFAULT_AG["gender"] and gender != settings.DEFAULT_AG["gender"]:
                     self.gender = gender
-                    print(f"predicted gender = {gender}")
+
 
             super().save(*args, **kwargs)
         else:

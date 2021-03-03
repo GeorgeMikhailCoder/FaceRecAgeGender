@@ -17,10 +17,16 @@ def predictAG(imgPath):
         res = None
     else:
         res = prediction[0]
+        age = res["age"]["value"]
+        ageAc = res["age"]["confidence"]
+        gender = res["gender"]["value"]
+        genderAc = res["gender"]["confidence"]
+        print(f"predicted age = {age} (accuracy = {ageAc}%)")
+        print(f"predicted gender = \"{gender}\" (accuracy = {genderAc}%)")
     return res
 
 def applyPredictionAG(prediction, poss, defaults):
-    ic(prediction)
+    # ic(prediction)
     if prediction==None:
         print(f"Fail to predict age/gender of the photo")
         age = defaults["age"]
