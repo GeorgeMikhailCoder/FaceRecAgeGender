@@ -5,10 +5,17 @@ from django.views.generic import ListView, CreateView
 from django.urls import reverse_lazy
 from django.conf import settings
 from django.shortcuts import redirect
+from icecream import ic
 
 class HomePageView(ListView):
     model = Person
     template_name = 'homeEx2.html'
+
+    def get_context_data(self, **kwargs):
+        context = super(HomePageView, self).get_context_data(**kwargs)
+        context["messages"] = settings.MESSAGES
+        settings.MESSAGES = ""
+        return context
 
 class CreatePostView(CreateView):
     model = Person

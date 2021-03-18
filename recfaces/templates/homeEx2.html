@@ -33,5 +33,10 @@
       </div>
     </div>
   </div>
+    {% if messages %}
+    <script>
+            alert("{{messages}}");
+    </script>
+    {% endif %}
 </body>
 </html>

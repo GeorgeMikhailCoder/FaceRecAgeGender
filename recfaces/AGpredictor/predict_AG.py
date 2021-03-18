@@ -3,7 +3,7 @@ from time import time
 from PIL import Image
 from icecream import ic
 import os
-
+from django.conf import settings
 
 data = AgeAndGender()
 data.load_shape_predictor(os.path.join("recfaces","AGpredictor",'shape_predictor_5_face_landmarks.dat'))
@@ -14,6 +14,8 @@ def predictAG(imgPath):
     image = Image.open(imgPath).convert("RGB")
     prediction = data.predict(image)
     if len(prediction) == 0:
+        print("Fail to predict age/gender of the photo")
+        settings.MESSAGES += "Fail to predict age/gender of the photo\\n"
         res = None
     else:
         res = prediction[0]
@@ -21,14 +23,16 @@ def predictAG(imgPath):
         ageAc = res["age"]["confidence"]
         gender = res["gender"]["value"]
         genderAc = res["gender"]["confidence"]
+
         print(f"predicted age = {age} (accuracy = {ageAc}%)")
         print(f"predicted gender = \"{gender}\" (accuracy = {genderAc}%)")
+        settings.MESSAGES += f"predicted age = {age} (accuracy = {ageAc}%)\\n"
+        settings.MESSAGES += f"predicted gender = {gender} (accuracy = {genderAc}%)\\n"
     return res
 
 def applyPredictionAG(prediction, poss, defaults):
     # ic(prediction)
     if prediction==None:
-        print(f"Fail to predict age/gender of the photo")
         age = defaults["age"]
         gender = defaults["gender"]
     else:

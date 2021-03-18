@@ -21,23 +21,30 @@ class Person(models.Model):
         tempImage =self.imgPath
         if tempImage=="None":
             print("There is no photo to add")
+            settings.MESSAGES += "There is no photo to add\\n"
             return # доделать
         tempName = "face" + genTempName() + ".jpg"
         path = default_storage.save(os.path.join("tmp",tempName), ContentFile(tempImage.read()))
         tmpFilePath = os.path.join(settings.MEDIA_ROOT, path)
-        isOld = mainCheckImageInBase(tmpFilePath, settings.DB_INFO)
-
+        isOld, index = mainCheckImageInBase(tmpFilePath, settings.DB_INFO)
         if not isOld:
             replacePhoto(tmpFilePath, settings.PATH_IMAGES)
             newImgPath = os.path.join(settings.PATH_IMAGES, tempName)
             self.binImg = encodeImageToBin(newImgPath)
             self.imgPath = newImgPath
 
+
             print(f"fio = {self.fio}")
             print(f"age = {self.age}")
             print(f"gender = {self.gender}")
             print(f"image file full path: {self.imgPath.__str__()}")
             print(f"encoding face length = {len(self.binImg)}")
+            settings.MESSAGES = ""
+            settings.MESSAGES += f"fio = {self.fio}\\n"
+            settings.MESSAGES += f"age = {self.age}\\n"
+            settings.MESSAGES += f"gender = {self.gender}\\n \\n"
+
+
             # ic(settings.PATH_IMAGES)
 
             if self.age == settings.DEFAULT_AG["age"] or self.gender == settings.DEFAULT_AG["gender"]:
@@ -53,7 +60,8 @@ class Person(models.Model):
 
             super().save(*args, **kwargs)
         else:
-            print(f"Photo already exists in DB")
+            print(f"Photo already exists in DB, id = {index}")
+            settings.MESSAGES += f"Photo already exists in DB, id = {index}\\n"
             removePhoto(tmpFilePath)
 
     def delete(self):

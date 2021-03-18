@@ -22,6 +22,7 @@ DEFAULT_AG = {
     "gender": "?"
 }
 
+MESSAGES = ""
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/3.0/howto/deployment/checklist/
 

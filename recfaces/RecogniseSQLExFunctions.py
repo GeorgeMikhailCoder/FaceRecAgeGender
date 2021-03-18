@@ -108,12 +108,28 @@ def removeTable(DBcursor):
 def clearTable(DBcursor):
     DBcursor.execute("""DELETE FROM recfaces_person""")
 
+def getFirstIndex(DBcursor):
+    DBcursor.execute("""SELECT id FROM recfaces_person ORDER BY id LIMIT 1""")
+
+    res = DBcursor.fetchone()
+    if res:
+        return int(res[0])
+    else:
+        return None
+
 def checkImageInBase(imgPath, DBcursor):
     img = face_recognition.load_image_file(imgPath)
     imgEnc = defImgageEncoding(img)
     encodes = getListEnc(DBcursor)
-    res, index = isInBase(imgEnc, encodes)
-    return res
+    res, indexMass = isInBase(imgEnc, encodes)
+    firstID = getFirstIndex(DBcursor)
+
+    if res:
+        resID = firstID + indexMass
+    else:
+        resID = None
+
+    return res, resID
 
 def checkAndAddImageInBase(imgPath, DBcursor, pathDBImages):
     img = face_recognition.load_image_file(imgPath)
@@ -166,10 +182,10 @@ def mainCheckImageInBase(pathImage, DB_INFO):
                      host=DB_INFO["HOST"],
                      )
     cursor = db.cursor()
-    res = checkImageInBase(pathImage, cursor)
+    res, index = checkImageInBase(pathImage, cursor)
     db.commit()
     db.close()
-    return res
+    return res, index
 
 def mainRemovePerson(DB_Info, id, mediaRoot):
     dbConnection = mysqlConnect(DB_Info)
