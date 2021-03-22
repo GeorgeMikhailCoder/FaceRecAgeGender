@@ -28,22 +28,6 @@ def delete(request, id):
     mainRemovePerson(settings.DB_INFO, id, settings.PATH_IMAGES)
     return redirect('home')
 
-# def edit(request, id):
-#     try:
-#         person = Person.objects.get(id=id)
-#
-#         if request.method == "POST":
-#             person.name = request.POST.get("fio")
-#             person.age = request.POST.get("age")
-#             person.gender = request.POST.get("gender")
-#             person.save()
-#             return HttpResponseRedirect("/")
-#         else:
-#             return render(request, "edit.html", {"person": person})
-#     except Person.DoesNotExist:
-#         return HttpResponseNotFound("<h2>Person not found</h2>")
-
-
 # работает верно!
 from django.views.decorators.csrf import csrf_exempt
 @csrf_exempt
@@ -65,15 +49,7 @@ def catchHook(request):
         tmpFilePath = os.path.join(settings.MEDIA_ROOT, path)
 
         id, isOld, msg = mainCheckAndAddImageToBase(tmpFilePath, settings.DB_INFO, settings.PATH_IMAGES)
-        # sendMessage(msg)
-
-        # добавить сохранение фото в постоянном месте
-        # if not isOld:
-        #     from shutil import move, copy, copy2, rmtree
-        #     print(f"try to copy:\n from {tmpFilePath}\nto {pathDBImages}")
-        #     move(tmpFilePath, pathDBImages)
-
-
+        settings.MESSAGES = ""
 
         return HttpResponse(f"Принято!\nРезультат:\n{msg}")
     return HttpResponse("Try to use POST")
