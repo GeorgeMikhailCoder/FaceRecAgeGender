@@ -39,10 +39,13 @@ def catchHook(request):
 
     print("hook catched")
     if request.method == "POST":
-        tempImage = request.FILES['face']
-        if tempImage==None:
+        try:
+            tempImage = request.FILES['face']
+            if tempImage == None:
+                raise ValueError('File field is none')
+        except Exception:
             print("There is no photo to add")
-            return # доделать
+            return HttpResponse("There is no photo to add")
 
         tempName = "face" + genTempName() + ".jpg"
         path = default_storage.save(os.path.join("tmp", tempName), ContentFile(tempImage.read()))
