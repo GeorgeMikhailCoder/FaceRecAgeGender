@@ -13,6 +13,7 @@ class Person(models.Model):
     fio = models.CharField(max_length=50, default="unknown")
     gender = models.CharField(max_length=1, choices=[(settings.DEFAULT_AG["gender"], '?'), ('M', 'Male'), ('F', 'Female')], default=settings.DEFAULT_AG["gender"])
     age = models.SmallIntegerField(default=settings.DEFAULT_AG["age"])
+    idSource = models.SmallIntegerField(default=0)
     imgPath = models.ImageField(max_length=200, default="None")
     binImg = models.BinaryField(max_length=2048, default=None)
 

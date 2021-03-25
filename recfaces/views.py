@@ -36,6 +36,7 @@ def catchHook(request):
     from django.core.files.storage import default_storage
     from django.core.files.base import ContentFile
     from .RecogniseSQLExFunctions import mainCheckAndAddImageToBase, genTempName, sendMessage
+    from django.http import JsonResponse
 
     print("hook catched")
     if request.method == "POST":
@@ -47,13 +48,29 @@ def catchHook(request):
             print("There is no photo to add")
             return HttpResponse("There is no photo to add")
 
+        try:
+            idSource = request.POST["idSource"]
+            if idSource == None:
+                raise ValueError('idSource field is none')
+        except Exception:
+            print("There is no idSource")
+            return HttpResponse("There is no idSource")
+
+        DB_ObjectInfo = {}
+        DB_ObjectInfo["idSource"] = idSource
+
         tempName = "face" + genTempName() + ".jpg"
         path = default_storage.save(os.path.join("tmp", tempName), ContentFile(tempImage.read()))
         tmpFilePath = os.path.join(settings.MEDIA_ROOT, path)
 
-        id, isOld, msg = mainCheckAndAddImageToBase(tmpFilePath, settings.DB_INFO, settings.PATH_IMAGES)
+        id, isOld, msg = mainCheckAndAddImageToBase(tmpFilePath, DB_ObjectInfo, settings.DB_INFO, settings.PATH_IMAGES)
+        str = settings.MESSAGES
+        str = str.split("\\n")
+        str = "\n".join(str)
+        msg += "\n"
+        msg += str
         settings.MESSAGES = ""
 
-        return HttpResponse(f"Принято!\nРезультат:\n{msg}")
+        return JsonResponse({"message": msg})
     return HttpResponse("Try to use POST")
 

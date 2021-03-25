@@ -5,6 +5,7 @@ import pickle
 import os
 from shutil import move
 from django.conf import settings
+from icecream import ic
 
 def mysqlConnect(DB_INFO):
     return MySQLdb.connect(
@@ -64,16 +65,16 @@ def isInBase(imgEnc, encodes):
     match = face_recognition.compare_faces([encodes[bestIndex], ], imgEnc, settings.KOEF_FACE_COMPARATION)[0]
     return match, bestIndex
 
-def addToBase(DBcursor, name, age, gender, imgPath, imgEnc=np.empty(0)):
+def addToBase(DBcursor, name, age, gender,idSource ,imgPath, imgEnc=np.empty(0)):
     if(len(imgEnc)==0):
         img = face_recognition.load_image_file(imgPath)
         imgEnc = defImgageEncoding(img)
 
     binImg = pickle.dumps(imgEnc)
 
-    DBcursor.execute('INSERT INTO recfaces_person (fio, age, gender, imgPath, binImg)'
-                     ' VALUES (%s,%s,%s,%s,%s)',
-                     (name, age, gender, imgPath, binImg)
+    DBcursor.execute('INSERT INTO recfaces_person (fio, age, gender, idSource, imgPath, binImg)'
+                     ' VALUES (%s,%s,%s,%s,%s,%s)',
+                     (name, age, gender, idSource, imgPath, binImg)
                      )
 
 def replacePhoto(imgPath, pathTo):
@@ -131,7 +132,7 @@ def checkImageInBase(imgPath, DBcursor):
 
     return res, resID
 
-def checkAndAddImageInBase(imgPath, DBcursor, pathDBImages):
+def checkAndAddImageInBase(imgPath, DB_ObjectInfo, DBcursor, pathDBImages):
     img = face_recognition.load_image_file(imgPath)
     imgEnc = defImgageEncoding(img)
     encodes = getListEnc(DBcursor)
@@ -151,7 +152,9 @@ def checkAndAddImageInBase(imgPath, DBcursor, pathDBImages):
         from .AGpredictor.predict_AG import mainPredictAG
         age, gender = mainPredictAG(imgNewPath, settings.PREDICT_ACCURACY, settings.DEFAULT_AG)
 
-        addToBase(DBcursor, "unknown", age, gender, imgNewPath, imgEnc)
+        idSource = DB_ObjectInfo["idSource"]
+
+        addToBase(DBcursor, "unknown", age, gender, idSource, imgNewPath, imgEnc)
         binImg = pickle.dumps(imgEnc)
         DBcursor.execute("SELECT id FROM recfaces_person WHERE binImg=%s", (binImg,))
         id = DBcursor.fetchone()[0]
@@ -159,11 +162,11 @@ def checkAndAddImageInBase(imgPath, DBcursor, pathDBImages):
 
     return id, res
 
-def mainCheckAndAddImageToBase(pathImage, DB_Info, pathDBImages):
+def mainCheckAndAddImageToBase(pathImage, DB_ObjectInfo, DB_Info, pathDBImages):
     dbConnection = mysqlConnect(DB_Info)
     db = dbConnection.cursor()
 
-    id, isOld = checkAndAddImageInBase(pathImage, db, pathDBImages)
+    id, isOld = checkAndAddImageInBase(pathImage, DB_ObjectInfo, db, pathDBImages)
     if isOld:
         msg = f"Face exists in database, id = {id}"
     else:
