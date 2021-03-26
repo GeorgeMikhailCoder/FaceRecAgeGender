@@ -56,21 +56,29 @@ def catchHook(request):
             print("There is no idSource")
             return HttpResponse("There is no idSource")
 
-        DB_ObjectInfo = {}
-        DB_ObjectInfo["idSource"] = idSource
+
+
 
         tempName = "face" + genTempName() + ".jpg"
         path = default_storage.save(os.path.join("tmp", tempName), ContentFile(tempImage.read()))
         tmpFilePath = os.path.join(settings.MEDIA_ROOT, path)
 
-        id, isOld, msg = mainCheckAndAddImageToBase(tmpFilePath, DB_ObjectInfo, settings.DB_INFO, settings.PATH_IMAGES)
-        str = settings.MESSAGES
-        str = str.split("\\n")
-        str = "\n".join(str)
-        msg += "\n"
-        msg += str
+        DB_ObjectInfo = {
+            "id": None,
+            "gender": "?",
+            "age": 0,
+            "idSource": idSource,
+            "imgPath": tmpFilePath,
+        }
+        DB_ObjectInfo, isOld = mainCheckAndAddImageToBase(DB_ObjectInfo, settings.DB_INFO, settings.PATH_IMAGES)
+        msg = settings.MESSAGES
+        msg = msg.split("\\n")
+        msg = "\n".join(msg)
         settings.MESSAGES = ""
 
-        return JsonResponse({"message": msg})
+        answer = DB_ObjectInfo
+        answer.pop("imgPath")
+        answer["message"] = msg
+        return JsonResponse(answer)
     return HttpResponse("Try to use POST")
 

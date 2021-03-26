@@ -118,6 +118,16 @@ def getFirstIndex(DBcursor):
     else:
         return None
 
+def DB_answer2ObjectInfo(DB_answer):
+    return {
+            "id": DB_answer[0],
+            "fio": DB_answer[1],
+            "gender": DB_answer[2],
+            "age": DB_answer[3],
+            "idSource": DB_answer[4],
+            "imgPath": DB_answer[5],
+        }
+
 def checkImageInBase(imgPath, DBcursor):
     img = face_recognition.load_image_file(imgPath)
     imgEnc = defImgageEncoding(img)
@@ -132,18 +142,23 @@ def checkImageInBase(imgPath, DBcursor):
 
     return res, resID
 
-def checkAndAddImageInBase(imgPath, DB_ObjectInfo, DBcursor, pathDBImages):
+def checkAndAddImageInBase(DB_ObjectInfo, DBcursor, pathDBImages):
+    imgPath = DB_ObjectInfo["imgPath"]
     img = face_recognition.load_image_file(imgPath)
     imgEnc = defImgageEncoding(img)
     encodes = getListEnc(DBcursor)
-    res, index = isInBase(imgEnc, encodes)
+    isOld, index = isInBase(imgEnc, encodes)
 
-    if res:
+    if isOld:
         binImg = pickle.dumps(encodes[index])
-        DBcursor.execute("SELECT id FROM recfaces_person WHERE binImg=%s", (binImg,))
-        id = DBcursor.fetchone()[0]
-        print(f"Face exists in database, id = {id}")
+        DBcursor.execute("SELECT id, fio, age, gender, idSource, imgPath  FROM recfaces_person WHERE binImg=%s", (binImg,))
+        DB_answer = DBcursor.fetchone()
+        DB_ObjectInfo = DB_answer2ObjectInfo(DB_answer)
+
         removePhoto(imgPath)
+
+        id = DB_ObjectInfo["id"]
+        settings.MESSAGES += f"Face exists in database, id = {id}\\n"
     else:
         imgName = os.path.split(imgPath)[1]
         imgNewPath = os.path.join(pathDBImages, imgName)
@@ -156,26 +171,24 @@ def checkAndAddImageInBase(imgPath, DB_ObjectInfo, DBcursor, pathDBImages):
 
         addToBase(DBcursor, "unknown", age, gender, idSource, imgNewPath, imgEnc)
         binImg = pickle.dumps(imgEnc)
-        DBcursor.execute("SELECT id FROM recfaces_person WHERE binImg=%s", (binImg,))
-        id = DBcursor.fetchone()[0]
-        print(f"Face doesn't exists in database, added, id = {id}")
 
-    return id, res
+        DBcursor.execute("SELECT id, fio, age, gender, idSource, imgPath  FROM recfaces_person WHERE binImg=%s", (binImg,))
+        DB_answer = DBcursor.fetchone()
+        DB_ObjectInfo = DB_answer2ObjectInfo(DB_answer)
 
-def mainCheckAndAddImageToBase(pathImage, DB_ObjectInfo, DB_Info, pathDBImages):
+        id = DB_ObjectInfo["id"]
+        settings.MESSAGES += f"Face doesn't exists in database, added, id = {id}\\n"
+    return DB_ObjectInfo, isOld
+
+def mainCheckAndAddImageToBase(DB_ObjectInfo, DB_Info, pathDBImages):
     dbConnection = mysqlConnect(DB_Info)
     db = dbConnection.cursor()
 
-    id, isOld = checkAndAddImageInBase(pathImage, DB_ObjectInfo, db, pathDBImages)
-    if isOld:
-        msg = f"Face exists in database, id = {id}"
-    else:
-        msg = f"Face doesn't exists in database, added, id = {id}"
+    DB_ObjectInfo, isOld = checkAndAddImageInBase(DB_ObjectInfo, db, pathDBImages)
 
-    # sendMessage(msg)
     dbConnection.commit()
     dbConnection.close()
-    return id, isOld, msg
+    return DB_ObjectInfo, isOld
 
 def mainCheckImageInBase(pathImage, DB_INFO):
     db = MySQLdb.connect(
