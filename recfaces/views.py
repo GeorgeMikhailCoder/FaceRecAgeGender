@@ -37,48 +37,38 @@ def catchHook(request):
     from django.core.files.base import ContentFile
     from .RecogniseSQLExFunctions import mainCheckAndAddImageToBase, genTempName, sendMessage
     from django.http import JsonResponse
+    from .ExtraFunctions import checkPost
 
     print("hook catched")
+
     if request.method == "POST":
-        try:
+        isCorrect, msgErr = checkPost(request)
+        if not isCorrect:
+            return JsonResponse({"message": msgErr})
+        else:
             tempImage = request.FILES['face']
-            if tempImage == None:
-                raise ValueError('File field is none')
-        except Exception:
-            print("There is no photo to add")
-            return HttpResponse("There is no photo to add")
-
-        try:
             idSource = request.POST["idSource"]
-            if idSource == None:
-                raise ValueError('idSource field is none')
-        except Exception:
-            print("There is no idSource")
-            return HttpResponse("There is no idSource")
 
+            tempName = "face" + genTempName() + ".jpg"
+            path = default_storage.save(os.path.join("tmp", tempName), ContentFile(tempImage.read()))
+            tmpFilePath = os.path.join(settings.MEDIA_ROOT, path)
 
+            DB_ObjectInfo = {
+                "id": None,
+                "gender": "?",
+                "age": 0,
+                "idSource": idSource,
+                "imgPath": tmpFilePath,
+            }
+            DB_ObjectInfo, isOld = mainCheckAndAddImageToBase(DB_ObjectInfo, settings.DB_INFO, settings.PATH_IMAGES)
+            msg = settings.MESSAGES
+            msg = msg.split("\\n")
+            msg = "\n".join(msg)
+            settings.MESSAGES = ""
 
-
-        tempName = "face" + genTempName() + ".jpg"
-        path = default_storage.save(os.path.join("tmp", tempName), ContentFile(tempImage.read()))
-        tmpFilePath = os.path.join(settings.MEDIA_ROOT, path)
-
-        DB_ObjectInfo = {
-            "id": None,
-            "gender": "?",
-            "age": 0,
-            "idSource": idSource,
-            "imgPath": tmpFilePath,
-        }
-        DB_ObjectInfo, isOld = mainCheckAndAddImageToBase(DB_ObjectInfo, settings.DB_INFO, settings.PATH_IMAGES)
-        msg = settings.MESSAGES
-        msg = msg.split("\\n")
-        msg = "\n".join(msg)
-        settings.MESSAGES = ""
-
-        answer = DB_ObjectInfo
-        answer.pop("imgPath")
-        answer["message"] = msg
-        return JsonResponse(answer)
-    return HttpResponse("Try to use POST")
+            answer = DB_ObjectInfo
+            answer.pop("imgPath")
+            answer["message"] = msg
+            return JsonResponse(answer)
+    return JsonResponse({"message": "Try to use POST"})
 
