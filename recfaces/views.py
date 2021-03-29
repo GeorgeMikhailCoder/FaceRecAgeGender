@@ -37,10 +37,10 @@ def catchHook(request):
     from django.core.files.base import ContentFile
     from .RecogniseSQLExFunctions import mainCheckAndAddImageToBase, genTempName, sendMessage
     from django.http import JsonResponse
-    from .ExtraFunctions import checkPost
+    from .ExtraFunctions import checkPost, ms
 
     print("hook catched")
-
+    msg = ""
     if request.method == "POST":
         isCorrect, msgErr = checkPost(request)
         if not isCorrect:
@@ -49,26 +49,41 @@ def catchHook(request):
             tempImage = request.FILES['face']
             idSource = request.POST["idSource"]
 
-            tempName = "face" + genTempName() + ".jpg"
-            path = default_storage.save(os.path.join("tmp", tempName), ContentFile(tempImage.read()))
-            tmpFilePath = os.path.join(settings.MEDIA_ROOT, path)
+            try:
+                try:
+                    # tempName = "face" + genTempName() + ".jpg"
+                    tempName = "face.jpg"
+                    path = default_storage.save(os.path.join("tmp", tempName), ContentFile(tempImage.read()))
+                    tmpFilePath = os.path.join(settings.MEDIA_ROOT, path)
+                except Exception:
+                    return JsonResponse({"message": f"Fail to save temporary file! \n "
+                                                    "path to save is relative to 'default_storage' from django\n"
+                                                    f"path to save = {os.path.join('tmp', tempName)}\n"})
 
-            DB_ObjectInfo = {
-                "id": None,
-                "gender": "?",
-                "age": 0,
-                "idSource": idSource,
-                "imgPath": tmpFilePath,
-            }
-            DB_ObjectInfo, isOld = mainCheckAndAddImageToBase(DB_ObjectInfo, settings.DB_INFO, settings.PATH_IMAGES)
-            msg = settings.MESSAGES
-            msg = msg.split("\\n")
-            msg = "\n".join(msg)
-            settings.MESSAGES = ""
 
-            answer = DB_ObjectInfo
-            answer.pop("imgPath")
-            answer["message"] = msg
-            return JsonResponse(answer)
+                DB_ObjectInfo = {
+                    "id": None,
+                    "gender": "?",
+                    "age": 0,
+                    "idSource": idSource,
+                    "imgPath": tmpFilePath,
+                }
+                DB_ObjectInfo, isOld = mainCheckAndAddImageToBase(DB_ObjectInfo, settings.DB_INFO, settings.PATH_IMAGES)
+                msg = settings.MESSAGES
+                msg = msg.split("\\n")
+                msg = "\n".join(msg)
+                settings.MESSAGES = ""
+
+                answer = DB_ObjectInfo
+                answer.pop("imgPath")
+            except Exception:
+                msg += ms("An error in process accured")
+                msg += ms("request.POST: ")
+                msg += ms(request.POST.__str__())
+                msg += ms("request.FILES: ")
+                msg += ms(request.FILES.__str__())
+            finally:
+                answer["message"] = msg
+                return JsonResponse(answer)
     return JsonResponse({"message": "Try to use POST"})
 

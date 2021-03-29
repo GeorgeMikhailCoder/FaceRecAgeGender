@@ -8,12 +8,18 @@ from django.conf import settings
 from icecream import ic
 
 def mysqlConnect(DB_INFO):
-    return MySQLdb.connect(
-        db=DB_INFO["NAME"],
-        user=DB_INFO["USER"],
-        passwd=DB_INFO["PASSWORD"],
-        host=DB_INFO["HOST"],
-    )
+    try:
+        con = MySQLdb.connect(
+            db=DB_INFO["NAME"],
+            user=DB_INFO["USER"],
+            passwd=DB_INFO["PASSWORD"],
+            host=DB_INFO["HOST"],
+        )
+    except:
+        settings.MESSAGES += f"Fail to connect to database \n DB_INFO = {DB_INFO} \n"
+        con = None
+    finally:
+        return con
 
 def genTempName():
     from time import time
@@ -78,7 +84,10 @@ def addToBase(DBcursor, name, age, gender,idSource ,imgPath, imgEnc=np.empty(0))
                      )
 
 def replacePhoto(imgPath, pathTo):
-    move(imgPath, pathTo)
+    try:
+        move(imgPath, pathTo)
+    except:
+        settings.MESSAGES += f"Fail to replace file: \n path from = {imgPath} ,\n path to = {pathTo} \n"
 
 def removePhoto(imgPath):
     try:
@@ -181,7 +190,11 @@ def checkAndAddImageInBase(DB_ObjectInfo, DBcursor, pathDBImages):
     return DB_ObjectInfo, isOld
 
 def mainCheckAndAddImageToBase(DB_ObjectInfo, DB_Info, pathDBImages):
-    dbConnection = mysqlConnect(DB_Info)
+    try:
+        dbConnection = mysqlConnect(DB_Info)
+    except:
+        return DB_ObjectInfo, True
+
     db = dbConnection.cursor()
 
     DB_ObjectInfo, isOld = checkAndAddImageInBase(DB_ObjectInfo, db, pathDBImages)
