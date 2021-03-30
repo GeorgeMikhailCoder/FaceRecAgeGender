@@ -1,4 +1,6 @@
+
 def ms(msg):
+
     print(msg)
     return msg+"\n"
 

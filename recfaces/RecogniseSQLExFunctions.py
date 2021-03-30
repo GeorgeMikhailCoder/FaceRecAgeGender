@@ -131,8 +131,8 @@ def DB_answer2ObjectInfo(DB_answer):
     return {
             "id": DB_answer[0],
             "fio": DB_answer[1],
-            "gender": DB_answer[2],
-            "age": DB_answer[3],
+            "age": DB_answer[2],
+            "gender": DB_answer[3],
             "idSource": DB_answer[4],
             "imgPath": DB_answer[5],
         }
