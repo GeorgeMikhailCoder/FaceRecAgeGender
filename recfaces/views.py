@@ -6,7 +6,7 @@ from django.urls import reverse_lazy
 from django.conf import settings
 from django.shortcuts import redirect
 from icecream import ic
-
+import logging.config
 class HomePageView(ListView):
     model = Person
     template_name = 'homeEx2.html'
@@ -38,8 +38,10 @@ def catchHook(request):
     from .RecogniseSQLExFunctions import mainCheckAndAddImageToBase, genTempName, sendMessage
     from django.http import JsonResponse
     from .ExtraFunctions import checkPost, ms
+    import logging.config
+    logger = logging.getLogger("main_logger.views.catchHook")
 
-    print("hook catched")
+    logger.info("hook cathed")
     msg = ""
     if request.method == "POST":
         isCorrect, msgErr = checkPost(request)
@@ -49,6 +51,9 @@ def catchHook(request):
             tempImage = request.FILES['face']
             idSource = request.POST["idSource"]
 
+            if idSource == None:
+                idSource = settings.DEFAULTS["idSource"]
+
             try:
                 try:
                     # tempName = "face" + genTempName() + ".jpg"
@@ -56,9 +61,8 @@ def catchHook(request):
                     path = default_storage.save(os.path.join("tmp", tempName), ContentFile(tempImage.read()))
                     tmpFilePath = os.path.join(settings.MEDIA_ROOT, path)
                 except Exception:
-                    return JsonResponse({"message": f"Fail to save temporary file! \n "
-                                                    "path to save is relative to 'default_storage' from django\n"
-                                                    f"path to save = {os.path.join('tmp', tempName)}\n"})
+                    logger.error(f"Fail to save temporary file, path to save is relative to 'default_storage' from django, path to save = {os.path.join('tmp', tempName)}")
+                    return JsonResponse({"message": f"Fail to save temporary file, path to save is relative to 'default_storage' from django, path to save = {os.path.join('tmp', tempName)}"})
 
 
                 DB_ObjectInfo = {

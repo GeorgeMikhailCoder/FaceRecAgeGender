@@ -16,10 +16,14 @@ import os
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 from .EnviromentVariables import DB_INFO, PATH_IMAGES, KOEF_FACE_COMPARATION, PREDICT_ACCURACY
+import logging.config
+logging.config.fileConfig('log_conf.conf')
 
-DEFAULT_AG = {
+
+DEFAULTS = {
     "age": 0,
-    "gender": "?"
+    "gender": "?",
+    "idSource": 0
 }
 
 MESSAGES = ""

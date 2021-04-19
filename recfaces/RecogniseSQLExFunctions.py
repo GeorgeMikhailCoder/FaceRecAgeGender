@@ -5,7 +5,7 @@ import pickle
 import os
 from shutil import move
 from django.conf import settings
-from icecream import ic
+import logging.config
 
 def mysqlConnect(DB_INFO):
     try:
@@ -17,6 +17,8 @@ def mysqlConnect(DB_INFO):
         )
     except:
         settings.MESSAGES += f"Fail to connect to database \n DB_INFO = {DB_INFO} \n"
+        logger = logging.getLogger("main_logger.RecogniseSQLExFunctions.mysqlConnect")
+        logger.error(f"Fail to connect to database \n DB_INFO = {DB_INFO}")
         con = None
     finally:
         return con
@@ -69,6 +71,11 @@ def isInBase(imgEnc, encodes):
 
     bestIndex = np.argmin(faceDistances)
     match = face_recognition.compare_faces([encodes[bestIndex], ], imgEnc, settings.KOEF_FACE_COMPARATION)[0]
+
+    logger = logging.getLogger("main_logger.RecogniseSQLExFunctions.isInBase")
+    logger.info(f"Comparing faces: distance = {faceDistances[bestIndex]}, KOEF_FACE_COMPARATION = {settings.KOEF_FACE_COMPARATION}, isInBase = {match}")
+    settings.MESSAGES += f"Comparing faces: distance = {faceDistances[bestIndex]}, KOEF_FACE_COMPARATION = {settings.KOEF_FACE_COMPARATION}, isInBase = {match}, best index in mass = {bestIndex}\\n"
+
     return match, bestIndex
 
 def addToBase(DBcursor, name, age, gender,idSource ,imgPath, imgEnc=np.empty(0)):
@@ -88,13 +95,16 @@ def replacePhoto(imgPath, pathTo):
         move(imgPath, pathTo)
     except:
         settings.MESSAGES += f"Fail to replace file: \n path from = {imgPath} ,\n path to = {pathTo} \n"
+        logger = logging.getLogger("main_logger.RecogniseSQLExFunctions.removePhoto")
+        logger.error(f"Fail to replace file: \n path from = {imgPath} ,\n path to = {pathTo}")
 
 def removePhoto(imgPath):
+    logger = logging.getLogger("main_logger.RecogniseSQLExFunctions.removePhoto")
     try:
         os.remove(imgPath)
     except Exception:
-        print(f"Fail to remove file: {imgPath}")
-        print("Also an object in base will be removed")
+        logger.error(f"Fail to remove file: {imgPath}")
+        logger.error("Also an object in base will be removed")
 
 def showBase(DBcursor):
     for row in DBcursor.execute('SELECT id, fio, gender, age FROM recfaces_person'):
@@ -144,14 +154,22 @@ def checkImageInBase(imgPath, DBcursor):
     res, indexMass = isInBase(imgEnc, encodes)
     firstID = getFirstIndex(DBcursor)
 
+    if not indexMass==None:
+        logger = logging.getLogger("main_logger.RecogniseSQLExFunctions.checkImageInBase")
+        logger.info(f"Best id = {firstID + indexMass}")
+        settings.MESSAGES += f"Best id = {firstID + indexMass}\\n"
+
     if res:
         resID = firstID + indexMass
     else:
         resID = None
 
+
+
     return res, resID
 
 def checkAndAddImageInBase(DB_ObjectInfo, DBcursor, pathDBImages):
+    logger = logging.getLogger("main_logger.RecogniseSQLExFunctions.checkAndAddImageInBase")
     imgPath = DB_ObjectInfo["imgPath"]
     img = face_recognition.load_image_file(imgPath)
     imgEnc = defImgageEncoding(img)
@@ -167,6 +185,7 @@ def checkAndAddImageInBase(DB_ObjectInfo, DBcursor, pathDBImages):
         removePhoto(imgPath)
 
         id = DB_ObjectInfo["id"]
+        logger.info(f"Face exists in database, id = {id}")
         settings.MESSAGES += f"Face exists in database, id = {id}\\n"
     else:
         imgName = os.path.split(imgPath)[1]
@@ -174,7 +193,7 @@ def checkAndAddImageInBase(DB_ObjectInfo, DBcursor, pathDBImages):
         replacePhoto(imgPath, imgNewPath)
 
         from .AGpredictor.predict_AG import mainPredictAG
-        age, gender = mainPredictAG(imgNewPath, settings.PREDICT_ACCURACY, settings.DEFAULT_AG)
+        age, gender = mainPredictAG(imgNewPath, settings.PREDICT_ACCURACY, settings.DEFAULTS)
 
         idSource = DB_ObjectInfo["idSource"]
 
@@ -186,6 +205,7 @@ def checkAndAddImageInBase(DB_ObjectInfo, DBcursor, pathDBImages):
         DB_ObjectInfo = DB_answer2ObjectInfo(DB_answer)
 
         id = DB_ObjectInfo["id"]
+        logger.info(f"Face doesn't exists in database, added, id = {id}")
         settings.MESSAGES += f"Face doesn't exists in database, added, id = {id}\\n"
     return DB_ObjectInfo, isOld
 

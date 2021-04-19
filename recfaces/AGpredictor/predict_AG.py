@@ -4,6 +4,7 @@ from PIL import Image
 from icecream import ic
 import os
 from django.conf import settings
+import logging.config
 
 data = AgeAndGender()
 data.load_shape_predictor(os.path.join("recfaces","AGpredictor",'shape_predictor_5_face_landmarks.dat'))
@@ -24,8 +25,9 @@ def predictAG(imgPath):
         gender = res["gender"]["value"]
         genderAc = res["gender"]["confidence"]
 
-        print(f"predicted age = {age} (accuracy = {ageAc}%)")
-        print(f"predicted gender = \"{gender}\" (accuracy = {genderAc}%)")
+        logger = logging.getLogger("main_logger.predict_AG.predictAG")
+        logger.info(f"predicted age = {age} (accuracy = {ageAc}%)")
+        logger.info(f"predicted gender = \"{gender}\" (accuracy = {genderAc}%)")
         settings.MESSAGES += f"predicted age = {age} (accuracy = {ageAc}%)\\n"
         settings.MESSAGES += f"predicted gender = {gender} (accuracy = {genderAc}%)\\n"
     return res
